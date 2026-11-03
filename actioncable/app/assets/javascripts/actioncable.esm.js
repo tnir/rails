@@ -62,10 +62,10 @@ class ConnectionMonitor {
     clearTimeout(this.pollTimeout);
   }
   poll() {
-    this.pollTimeout = setTimeout((() => {
+    this.pollTimeout = setTimeout(() => {
       this.reconnectIfStale();
       this.poll();
-    }), this.getPollInterval());
+    }, this.getPollInterval());
   }
   getPollInterval() {
     const {staleThreshold: staleThreshold, reconnectionBackoffRate: reconnectionBackoffRate} = this.constructor;
@@ -97,12 +97,12 @@ class ConnectionMonitor {
   }
   visibilityDidChange() {
     if (document.visibilityState === "visible") {
-      setTimeout((() => {
+      setTimeout(() => {
         if (this.connectionIsStale() || !this.connection.isOpen()) {
           logger.log(`ConnectionMonitor reopening stale connection on visibilitychange. visibilityState = ${document.visibilityState}`);
           this.connection.reopen();
         }
-      }), 200);
+      }, 200);
     }
   }
 }
@@ -355,7 +355,7 @@ class SubscriptionGuarantor {
   }
   forget(subscription) {
     logger.log(`SubscriptionGuarantor forgetting ${subscription.identifier}`);
-    this.pendingSubscriptions = this.pendingSubscriptions.filter((s => s !== subscription));
+    this.pendingSubscriptions = this.pendingSubscriptions.filter(s => s !== subscription);
   }
   startGuaranteeing() {
     this.stopGuaranteeing();
@@ -365,14 +365,14 @@ class SubscriptionGuarantor {
     clearTimeout(this.retryTimeout);
   }
   retrySubscribing() {
-    this.retryTimeout = setTimeout((() => {
+    this.retryTimeout = setTimeout(() => {
       if (this.subscriptions && typeof this.subscriptions.subscribe === "function") {
-        this.pendingSubscriptions.map((subscription => {
+        this.pendingSubscriptions.map(subscription => {
           logger.log(`SubscriptionGuarantor resubscribing ${subscription.identifier}`);
           this.subscriptions.subscribe(subscription);
-        }));
+        });
       }
-    }), 500);
+    }, 500);
   }
 }
 
@@ -405,25 +405,25 @@ class Subscriptions {
     return subscription;
   }
   reject(identifier) {
-    return this.findAll(identifier).map((subscription => {
+    return this.findAll(identifier).map(subscription => {
       this.forget(subscription);
       this.notify(subscription, "rejected");
       return subscription;
-    }));
+    });
   }
   forget(subscription) {
     this.guarantor.forget(subscription);
-    this.subscriptions = this.subscriptions.filter((s => s !== subscription));
+    this.subscriptions = this.subscriptions.filter(s => s !== subscription);
     return subscription;
   }
   findAll(identifier) {
-    return this.subscriptions.filter((s => s.identifier === identifier));
+    return this.subscriptions.filter(s => s.identifier === identifier);
   }
   reload() {
-    return this.subscriptions.map((subscription => this.subscribe(subscription)));
+    return this.subscriptions.map(subscription => this.subscribe(subscription));
   }
   notifyAll(callbackName, ...args) {
-    return this.subscriptions.map((subscription => this.notify(subscription, callbackName, ...args)));
+    return this.subscriptions.map(subscription => this.notify(subscription, callbackName, ...args));
   }
   notify(subscription, callbackName, ...args) {
     let subscriptions;
@@ -432,7 +432,7 @@ class Subscriptions {
     } else {
       subscriptions = [ subscription ];
     }
-    return subscriptions.map((subscription => typeof subscription[callbackName] === "function" ? subscription[callbackName](...args) : undefined));
+    return subscriptions.map(subscription => typeof subscription[callbackName] === "function" ? subscription[callbackName](...args) : undefined);
   }
   subscribe(subscription) {
     if (this.sendCommand(subscription, "subscribe")) {
@@ -441,7 +441,7 @@ class Subscriptions {
   }
   confirmSubscription(identifier) {
     logger.log(`Subscription confirmed ${identifier}`);
-    this.findAll(identifier).map((subscription => this.guarantor.forget(subscription)));
+    this.findAll(identifier).map(subscription => this.guarantor.forget(subscription));
   }
   sendCommand(subscription, command) {
     const {identifier: identifier} = subscription;

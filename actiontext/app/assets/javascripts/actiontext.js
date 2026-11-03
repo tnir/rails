@@ -1,7 +1,7 @@
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define([ "exports" ], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, 
   factory(global.ActionText = {}));
-})(this, (function(exports) {
+})(this, function(exports) {
   "use strict";
   var sparkMd5 = {
     exports: {}
@@ -11,7 +11,7 @@
       {
         module.exports = factory();
       }
-    })((function(undefined$1) {
+    })(function(undefined$1) {
       var hex_chr = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" ];
       function md5cycle(x, k) {
         var a = x[0], b = x[1], c = x[2], d = x[3];
@@ -277,7 +277,7 @@
         var result = new Uint8Array(first.byteLength + second.byteLength);
         result.set(new Uint8Array(first));
         result.set(new Uint8Array(second), first.byteLength);
-        return returnUInt8Array ? result : result.buffer;
+        return result;
       }
       function hexToBinaryString(hex) {
         var bytes = [], length = hex.length, x;
@@ -368,7 +368,7 @@
         this.reset();
       };
       SparkMD5.ArrayBuffer.prototype.append = function(arr) {
-        var buff = concatenateArrayBuffers(this._buff.buffer, arr, true), length = buff.length, i;
+        var buff = concatenateArrayBuffers(this._buff.buffer, arr), length = buff.length, i;
         this._length += arr.byteLength;
         for (i = 64; i <= length; i += 64) {
           md5cycle(this._hash, md5blk_array(buff.subarray(i - 64, i)));
@@ -411,7 +411,7 @@
         return raw ? hexToBinaryString(ret) : ret;
       };
       return SparkMD5;
-    }));
+    });
   })(sparkMd5);
   var SparkMD5 = sparkMd5.exports;
   const fileSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
@@ -430,8 +430,8 @@
       this.callback = callback;
       this.md5Buffer = new SparkMD5.ArrayBuffer;
       this.fileReader = new FileReader;
-      this.fileReader.addEventListener("load", (event => this.fileReaderDidLoad(event)));
-      this.fileReader.addEventListener("error", (event => this.fileReaderDidError(event)));
+      this.fileReader.addEventListener("load", event => this.fileReaderDidLoad(event));
+      this.fileReader.addEventListener("error", event => this.fileReaderDidError(event));
       this.readNextChunk();
     }
     fileReaderDidLoad(event) {
@@ -517,15 +517,15 @@
       this.xhr.setRequestHeader("Content-Type", "application/json");
       this.xhr.setRequestHeader("Accept", "application/json");
       this.xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-      Object.keys(customHeaders).forEach((headerKey => {
+      Object.keys(customHeaders).forEach(headerKey => {
         this.xhr.setRequestHeader(headerKey, customHeaders[headerKey]);
-      }));
+      });
       const csrfToken = getMetaValue("csrf-token");
       if (csrfToken != undefined) {
         this.xhr.setRequestHeader("X-CSRF-Token", csrfToken);
       }
-      this.xhr.addEventListener("load", (event => this.requestDidLoad(event)));
-      this.xhr.addEventListener("error", (event => this.requestDidError(event)));
+      this.xhr.addEventListener("load", event => this.requestDidLoad(event));
+      this.xhr.addEventListener("error", event => this.requestDidError(event));
     }
     get status() {
       return this.xhr.status;
@@ -578,8 +578,8 @@
       for (const key in headers) {
         this.xhr.setRequestHeader(key, headers[key]);
       }
-      this.xhr.addEventListener("load", (event => this.requestDidLoad(event)));
-      this.xhr.addEventListener("error", (event => this.requestDidError(event)));
+      this.xhr.addEventListener("load", event => this.requestDidLoad(event));
+      this.xhr.addEventListener("error", event => this.requestDidError(event));
     }
     create(callback) {
       this.callback = callback;
@@ -607,29 +607,29 @@
       this.customHeaders = customHeaders;
     }
     create(callback) {
-      FileChecksum.create(this.file, ((error, checksum) => {
+      FileChecksum.create(this.file, (error, checksum) => {
         if (error) {
           callback(error);
           return;
         }
         const blob = new BlobRecord(this.file, checksum, this.url, this.customHeaders);
         notify(this.delegate, "directUploadWillCreateBlobWithXHR", blob.xhr);
-        blob.create((error => {
+        blob.create(error => {
           if (error) {
             callback(error);
           } else {
             const upload = new BlobUpload(blob);
             notify(this.delegate, "directUploadWillStoreFileWithXHR", upload.xhr);
-            upload.create((error => {
+            upload.create(error => {
               if (error) {
                 callback(error);
               } else {
                 callback(null, blob.toJSON());
               }
-            }));
+            });
           }
-        }));
-      }));
+        });
+      });
     }
   }
   function notify(object, methodName, ...messages) {
@@ -650,7 +650,7 @@
       hiddenInput.name = this.input.name;
       this.input.insertAdjacentElement("beforebegin", hiddenInput);
       this.dispatch("start");
-      this.directUpload.create(((error, attributes) => {
+      this.directUpload.create((error, attributes) => {
         if (error) {
           hiddenInput.parentNode.removeChild(hiddenInput);
           this.dispatchError(error);
@@ -659,7 +659,7 @@
         }
         this.dispatch("end");
         callback(error);
-      }));
+      });
     }
     uploadRequestDidProgress(event) {
       const progress = event.loaded / event.total * 90;
@@ -696,10 +696,10 @@
       this.dispatch("before-storage-request", {
         xhr: xhr
       });
-      xhr.upload.addEventListener("progress", (event => this.uploadRequestDidProgress(event)));
-      xhr.upload.addEventListener("loadend", (() => {
+      xhr.upload.addEventListener("progress", event => this.uploadRequestDidProgress(event));
+      xhr.upload.addEventListener("loadend", () => {
         this.simulateResponseProgress(xhr);
-      }));
+      });
     }
     simulateResponseProgress(xhr) {
       let progress = 90;
@@ -716,11 +716,11 @@
           requestAnimationFrame(updateProgress);
         }
       };
-      xhr.addEventListener("loadend", (() => {
+      xhr.addEventListener("loadend", () => {
         this.dispatch("progress", {
           progress: 100
         });
-      }));
+      });
       requestAnimationFrame(updateProgress);
     }
     estimateResponseTime() {
@@ -739,21 +739,21 @@
   class DirectUploadsController {
     constructor(form) {
       this.form = form;
-      this.inputs = findElements(form, inputSelector).filter((input => input.files.length));
+      this.inputs = findElements(form, inputSelector).filter(input => input.files.length);
     }
     start(callback) {
       const controllers = this.createDirectUploadControllers();
       const startNextController = () => {
         const controller = controllers.shift();
         if (controller) {
-          controller.start((error => {
+          controller.start(error => {
             if (error) {
               callback(error);
               this.dispatch("end");
             } else {
               startNextController();
             }
-          }));
+          });
         } else {
           callback();
           this.dispatch("end");
@@ -764,12 +764,12 @@
     }
     createDirectUploadControllers() {
       const controllers = [];
-      this.inputs.forEach((input => {
-        toArray(input.files).forEach((file => {
+      this.inputs.forEach(input => {
+        toArray(input.files).forEach(file => {
           const controller = new DirectUploadController(input, file);
           controllers.push(controller);
-        }));
-      }));
+        });
+      });
       return controllers;
     }
     dispatch(name, detail = {}) {
@@ -815,14 +815,14 @@
       event.preventDefault();
       form.setAttribute(processingAttribute, "");
       inputs.forEach(disable);
-      controller.start((error => {
+      controller.start(error => {
         form.removeAttribute(processingAttribute);
         if (error) {
           inputs.forEach(enable);
         } else {
           submitForm(form);
         }
-      }));
+      });
     }
   }
   function submitForm(form) {
@@ -864,10 +864,10 @@
       this.dispatch("initialize");
     }
     start() {
-      return new Promise(((resolve, reject) => {
-        this.directUpload.create(((error, attributes) => this.directUploadDidComplete(error, attributes, resolve, reject)));
+      return new Promise((resolve, reject) => {
+        this.directUpload.create((error, attributes) => this.directUploadDidComplete(error, attributes, resolve, reject));
         this.dispatch("start");
-      }));
+      });
     }
     directUploadWillCreateBlobWithXHR(xhr) {
       this.dispatch("before-blob-request", {
@@ -878,17 +878,17 @@
       this.dispatch("before-storage-request", {
         xhr: xhr
       });
-      xhr.upload.addEventListener("progress", (event => {
+      xhr.upload.addEventListener("progress", event => {
         const progress = event.loaded / event.total * 90;
         if (progress) {
           this.dispatch("progress", {
             progress: progress
           });
         }
-      }));
-      xhr.upload.addEventListener("loadend", (() => {
+      });
+      xhr.upload.addEventListener("loadend", () => {
         this.simulateResponseProgress(xhr);
-      }));
+      });
     }
     simulateResponseProgress(xhr) {
       let progress = 90;
@@ -905,11 +905,11 @@
           requestAnimationFrame(updateProgress);
         }
       };
-      xhr.addEventListener("loadend", (() => {
+      xhr.addEventListener("loadend", () => {
         this.dispatch("progress", {
           progress: 100
         });
-      }));
+      });
       requestAnimationFrame(updateProgress);
     }
     estimateResponseTime() {
@@ -960,31 +960,28 @@
       return this.element.dataset.blobUrlTemplate;
     }
   }
-  addEventListener("trix-initialize", (event => {
+  addEventListener("trix-initialize", event => {
     if (!event.target.dataset.directUploadUrl) {
-      event.target.toolbarElement.querySelectorAll("[data-trix-action=attachFiles]").forEach((button => {
+      event.target.toolbarElement.querySelectorAll("[data-trix-action=attachFiles]").forEach(button => {
         const group = button.closest("[data-trix-button-group]");
         button.remove();
         if (group && group.childElementCount === 0) group.remove();
-      }));
+      });
     }
-  }));
-  addEventListener("trix-file-accept", (event => {
+  });
+  addEventListener("trix-file-accept", event => {
     if (!event.target.dataset.directUploadUrl) {
       event.preventDefault();
     }
-  }));
-  addEventListener("trix-attachment-add", (event => {
+  });
+  addEventListener("trix-attachment-add", event => {
     const {attachment: attachment, target: target} = event;
     if (attachment.file) {
       const upload = new AttachmentUpload(attachment, target, attachment.file);
       const onProgress = event => attachment.setUploadProgress(event.detail.progress);
       target.addEventListener("direct-upload:progress", onProgress);
-      upload.start().then((attributes => attachment.setAttributes(attributes))).catch((error => alert(error))).finally((() => target.removeEventListener("direct-upload:progress", onProgress)));
+      upload.start().then(attributes => attachment.setAttributes(attributes)).catch(error => alert(error)).finally(() => target.removeEventListener("direct-upload:progress", onProgress));
     }
-  }));
-  exports.AttachmentUpload = AttachmentUpload;
-  Object.defineProperty(exports, "__esModule", {
-    value: true
   });
-}));
+  exports.AttachmentUpload = AttachmentUpload;
+});

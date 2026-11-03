@@ -1,6 +1,6 @@
 import resolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
-import { terser } from "rollup-plugin-terser"
+import terser from "@rollup/plugin-terser"
 
 const terserOptions = {
  mangle: false,
@@ -13,11 +13,11 @@ const terserOptions = {
 
 export default [
   {
-    input: "app/javascript/activestorage/index.js",
+    input: "app/javascript/actiontext/index.js",
     output: {
-      file: "app/assets/javascripts/activestorage.js",
+      file: "app/assets/javascripts/actiontext.js",
       format: "umd",
-      name: "ActiveStorage"
+      name: "ActionText"
     },
     plugins: [
       resolve(),
@@ -27,9 +27,9 @@ export default [
   },
 
   {
-    input: "app/javascript/activestorage/index.js",
+    input: "app/javascript/actiontext/index.js",
     output: {
-      file: "app/assets/javascripts/activestorage.esm.js",
+      file: "app/assets/javascripts/actiontext.esm.js",
       format: "es"
     },
     plugins: [
