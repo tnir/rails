@@ -108,7 +108,8 @@ Configuration options follow a consistent pattern across components:
 
 1. **Define the attribute** in the base class (e.g., `ActionView::Base`):
    ```ruby
-   cattr_accessor :remove_hidden_field_autocomplete, default: false
+   singleton_class.attr_accessor :remove_hidden_field_autocomplete
+   @remove_hidden_field_autocomplete = false
    ```
 
 2. **Check the flag** before applying behavior:
@@ -190,12 +191,12 @@ When modifying form behavior, check ALL three locations for consistency.
 - `lib/` - Production code
 - `test/` - Test files (NOT `spec/` - Rails uses Minitest, not RSpec)
 - `bin/` - Executable scripts (e.g., `bin/test`)
-- Each framework is self-contained with its own Gemfile and dependencies
-- Shared tools live in `tools/` (e.g., `tools/test.rb`, `tools/release.rb`)
+- Each framework is a separate gem with its own gemspec; development dependencies are managed in the shared root `Gemfile`
+- Shared tools live in `tools/` (e.g., `tools/test.rb`, `tools/releaser/`)
 
 ## Documentation
 
-- API docs use YARD/RDoc format
+- API docs use RDoc format
 - Guides source in `guides/source/` (Markdown)
-- Generate docs: `rake rdoc` (from framework directory)
+- Generate docs: `bundle exec rake rdoc` (from the repository root)
 - Configuration options documented in `guides/source/configuring.md`
