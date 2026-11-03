@@ -263,7 +263,7 @@ $ bundle exec rails new ~/my-test-app --dev
 The application generated in `~/my-test-app` runs against your local branch
 and, in particular, sees any modifications upon server reboot.
 
-For JavaScript packages, you can use [`yarn link`](https://yarnpkg.com/cli/link) to source your local branch in a generated application:
+For JavaScript packages, you can use [`yarn link`](https://classic.yarnpkg.com/en/docs/cli/link) to source your local branch in a generated application:
 
 ```bash
 $ cd rails/activestorage
